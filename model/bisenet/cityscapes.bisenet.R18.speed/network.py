@@ -6,6 +6,7 @@ import torch.nn.functional as F
 from torch.utils.checkpoint import checkpoint
 # from torchvision.models import resnet50, resnet101, resnet152
 
+import numpy as np
 from config import config
 from base_model import resnet18
 from seg_opr.seg_oprs import ConvBnRelu, AttentionRefinement, FeatureFusion
@@ -84,10 +85,13 @@ class BiSeNet(nn.Module):
         context_blocks = self.context_path(data)
         context_blocks.reverse()
 
-        global_context = self.global_context(context_blocks[0])
-        global_context = F.interpolate(global_context,
-                                       size=context_blocks[0].size()[2:],
+        fix_sizes = [(24, 48), (48, 96), (96, 192)]
+        global_context_avg = self.global_context(context_blocks[0])
+        global_context = F.interpolate(global_context_avg,
+                                       #size=context_blocks[0].size()[2:],
+                                       size=fix_sizes[0],
                                        mode='bilinear', align_corners=True)
+                                       # mode='nearest')
 
         last_fm = global_context
         pred_out = []
@@ -96,8 +100,11 @@ class BiSeNet(nn.Module):
                                                   self.refines)):
             fm = arm(fm)
             fm += last_fm
-            last_fm = F.interpolate(fm, size=(context_blocks[i + 1].size()[2:]),
+            last_fm = F.interpolate(fm, 
+                                    #size=(context_blocks[i + 1].size()[2:]),
+                                    size=fix_sizes[i + 1],
                                     mode='bilinear', align_corners=True)
+                                    #mode='nearest')
             last_fm = refine(last_fm)
             pred_out.append(last_fm)
         context_out = last_fm
@@ -113,7 +120,27 @@ class BiSeNet(nn.Module):
             loss = main_loss + aux_loss0 + aux_loss1
             return loss
 
-        return F.log_softmax(self.heads[-1](pred_out[-1]), dim=1)
+        head_out = self.heads[-1](pred_out[-1])
+        #out_data = head_out.cpu().numpy()
+        #print('head_out shape:', out_data.shape)
+        #np.save('head_out.npy', out_data);
+        #for i in range(5):
+        #    np.savetxt('head_out_' + str(i) + 'txt', out_data[0][i])
+        lsf_result = F.log_softmax(head_out, dim=1)
+        lsf_result = torch.exp(lsf_result)
+        lsf_result = F.interpolate(lsf_result, size=(768, 768*2), mode= 'bilinear', align_corners=True)
+        lsf_result = lsf_result.permute(0, 2, 3, 1)
+        lsf_result = lsf_result.argmax(3)
+        #np.save('torch_lsf_result.npy', lsf_result.cpu().numpy());
+        #np.save('torch_spatial_out.npy', spatial_out.cpu().numpy());
+        #np.save('torch_context_block_0.npy', context_blocks[0].cpu().numpy());
+        #np.save('torch_concate_fm.npy', concate_fm.cpu().numpy());
+        #np.save('torch_head_out.npy', head_out.cpu().numpy());
+        #np.save('torch_data.npy', data.cpu().numpy());
+
+        #return lsf_result, spatial_outs[1], spatial_outs[2] 
+        #return lsf_result, spatial_out, context_blocks[0], global_context_avg, global_context, context_out 
+        return lsf_result 
 
 
 class SpatialPath(nn.Module):
@@ -122,7 +149,7 @@ class SpatialPath(nn.Module):
         inner_channel = 64
         self.conv_7x7 = ConvBnRelu(in_planes, inner_channel, 7, 2, 3,
                                    has_bn=True, norm_layer=norm_layer,
-                                   has_relu=True, has_bias=False)
+                                   has_relu=True, has_bias=False, debug=True)
         self.conv_3x3_1 = ConvBnRelu(inner_channel, inner_channel, 3, 2, 1,
                                      has_bn=True, norm_layer=norm_layer,
                                      has_relu=True, has_bias=False)
@@ -134,11 +161,13 @@ class SpatialPath(nn.Module):
                                    has_relu=True, has_bias=False)
 
     def forward(self, x):
-        x = self.conv_7x7(x)
-        x = self.conv_3x3_1(x)
-        x = self.conv_3x3_2(x)
-        output = self.conv_1x1(x)
+        xs = self.conv_7x7(x)
+        x1 = xs[2]
+        x2 = self.conv_3x3_1(x1)
+        x3 = self.conv_3x3_2(x2)
+        output = self.conv_1x1(x3)
 
+        #return output, xs[0], xs[1]
         return output
 
 

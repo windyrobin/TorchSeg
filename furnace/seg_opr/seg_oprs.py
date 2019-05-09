@@ -14,7 +14,7 @@ import torch.nn as nn
 class ConvBnRelu(nn.Module):
     def __init__(self, in_planes, out_planes, ksize, stride, pad, dilation=1,
                  groups=1, has_bn=True, norm_layer=nn.BatchNorm2d, bn_eps=1e-5,
-                 has_relu=True, inplace=True, has_bias=False):
+                 has_relu=True, inplace=True, has_bias=False, debug=False):
         super(ConvBnRelu, self).__init__()
         self.conv = nn.Conv2d(in_planes, out_planes, kernel_size=ksize,
                               stride=stride, padding=pad,
@@ -25,15 +25,29 @@ class ConvBnRelu(nn.Module):
         self.has_relu = has_relu
         if self.has_relu:
             self.relu = nn.ReLU(inplace=inplace)
+        self.debug = debug
 
     def forward(self, x):
-        x = self.conv(x)
-        if self.has_bn:
-            x = self.bn(x)
-        if self.has_relu:
-            x = self.relu(x)
+        if self.debug ==  False:
+            x = self.conv(x)
+            if self.has_bn:
+                x = self.bn(x)
+            if self.has_relu:
+                x = self.relu(x)
 
-        return x
+            return x
+        else:
+            x = self.conv(x)
+            x1 = self.bn(x)
+            x2 = self.relu(x1)
+            #print ('running meaning :')
+            #print (self.bn.running_mean)
+            #print ('running var :')
+            #print (self.bn.running_var)
+            #print ('running weight :')
+            #print (self.bn.weight)
+            return [x, x1, x2]
+            
 
 
 class SeparableConvBnRelu(nn.Module):

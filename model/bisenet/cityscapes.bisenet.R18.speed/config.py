@@ -35,12 +35,12 @@ C.val_log_file = C.log_dir + '/val_' + exp_time + '.log'
 C.link_val_log_file = C.log_dir + '/val_last.log'
 
 """Data Dir and Weight Dir"""
-C.dataset_path = "/root/Source/Datasets/Segmentation/Cityscapes/"
+C.dataset_path = "/mnt/data/cityscapes/"
 C.img_root_folder = C.dataset_path
 C.gt_root_folder = C.dataset_path
-C.train_source = osp.join(C.dataset_path, "config_new/train.txt")
-C.eval_source = osp.join(C.dataset_path, "config_new/val.txt")
-C.test_source = osp.join(C.dataset_path, "config_new/test.txt")
+C.train_source = osp.join(C.dataset_path, "cityscapes_train_img_label.list")
+C.eval_source = osp.join(C.dataset_path, "cityscapes_val.txt")
+C.test_source = osp.join(C.dataset_path, "cityscapes_val.txt")
 C.is_test = False
 
 """Path Config"""
@@ -73,7 +73,9 @@ C.fix_bn = False
 C.sync_bn = True
 C.bn_eps = 1e-5
 C.bn_momentum = 0.1
-C.pretrained_model = "/root/Source/model_zoo/pytorch_model/resnet18_v1.pth"
+#C.pretrained_model = "/root/Source/model_zoo/pytorch_model/resnet18_v1.pth"
+C.pretrained_model = "./resnet18-5c106cde.pth"
+#model_zoo.load_url('https://s3.amazonaws.com/pytorch/models/resnet18-5c106cde.pth', model_dir="./")
 
 """Train Config"""
 C.lr = 1e-2

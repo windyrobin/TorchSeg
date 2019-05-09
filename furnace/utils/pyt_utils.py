@@ -6,6 +6,7 @@ import argparse
 from collections import OrderedDict, defaultdict
 
 import torch
+import torch.onnx
 import torch.utils.model_zoo as model_zoo
 
 from engine.logger import get_logger
@@ -57,7 +58,9 @@ def load_model(model, model_file, is_restore=False):
     logger.info(
         "Load model, Time usage:\n\tIO: {}, initialize parameters: {}".format(
             t_ioend - t_start, t_end - t_ioend))
-
+    #dummy_input = torch.randn(1, 3, 768, 768*2)
+    #torch.onnx.export(model, dummy_input, "bisenet.onnx", verbose=True)
+    #torch.onnx.export(model, dummy_input, "bisenet.onnx")
     return model
 
 

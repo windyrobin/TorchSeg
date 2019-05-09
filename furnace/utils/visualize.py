@@ -16,23 +16,26 @@ def show_prediction(colors, background, img, pred):
     final = np.array(im)
     return final
 
-def show_img(colors, background, img, clean, gt, *pds):
-    im1 = np.array(img, np.uint8)
-    set_img_color(colors, background, im1, clean)
-    final = np.array(im1)
+#def show_img(colors, background, img, clean, gt, *pds):
+def show_img(colors, background, img, *pds):
+    #im1 = np.array(img, np.uint8)
+    #set_img_color(colors, background, im1, clean)
+    #final = np.array(im1)
+    final = np.array(img, np.uint8)
     # the pivot black bar
-    pivot = np.zeros((im1.shape[0], 15, 3), dtype=np.uint8)
+    #pivot = np.zeros((im1.shape[0], 15, 3), dtype=np.uint8)
     for pd in pds:
         im = np.array(img, np.uint8)
         # pd[np.where(gt == 255)] = 255
         set_img_color(colors, background, im, pd)
-        final = np.column_stack((final, pivot))
+        #final = np.column_stack((final, pivot))
         final = np.column_stack((final, im))
 
-    im = np.array(img, np.uint8)
-    set_img_color(colors, background, im, gt, True)
-    final = np.column_stack((final, pivot))
-    final = np.column_stack((final, im))
+    #im = np.array(img, np.uint8)
+    #TODO, temp hacking 
+    #set_img_color(colors, background, im, gt, True)
+    #final = np.column_stack((final, pivot))
+    #final = np.column_stack((final, im))
     return final
 
 def get_colors(class_num):

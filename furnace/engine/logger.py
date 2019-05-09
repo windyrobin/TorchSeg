@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # encoding: utf-8
 # @Time    : 2018/8/2 上午11:48
 # @Author  : yuchangqian

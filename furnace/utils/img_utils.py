@@ -180,8 +180,8 @@ def random_crop(img, gt, size):
 
 def normalize(img, mean, std):
     # pytorch pretrained model need the input range: 0-1
-    img = img.astype(np.float32) / 255.0
-    img = img - mean
+    new_img = img.astype(np.float32) / 255.0
+    new_img = new_img - mean
     # img = img / std
 
-    return img
+    return new_img

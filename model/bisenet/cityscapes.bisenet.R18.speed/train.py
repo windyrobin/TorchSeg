@@ -31,7 +31,8 @@ parser = argparse.ArgumentParser()
 with Engine(custom_parser=parser) as engine:
     args = parser.parse_args()
 
-    cudnn.benchmark = True
+    #cudnn.benchmark = True
+    #cudnn.benchmark = False
 
     seed = config.seed
     if engine.distributed:
