@@ -117,7 +117,36 @@ In the evaluator, we have implemented the multi-gpu inference base on the multi-
     usage: -e epoch_idx -d device_idx [--verbose ] 
     [--show_image] [--save_path Pred_Save_Path]
     ```
-
+3. sample here
+```
+root@gpu-labeling:/mnt/xm-bisenet/model/bisenet/cityscapes.bisenet.R18.speed# python3 infer.py --tensorrt                                                                                                   
+09 10:28:08 using devices 1                                                                                                                                                                                 
+Reading engine from file ./bisenet-half.trt                                                                                                                                                                 
+<tensorrt.tensorrt.IPluginFactory object at 0x7f0ea7275538>                                                                                                                                                 
+[TensorRT] INFO: Glob Size is 64269120 bytes.                                                                                                                                                               
+[TensorRT] INFO: Added linear block of size 75497472                                                                                                                                                        
+[TensorRT] INFO: Added linear block of size 44826624                                                                                                                                                        
+[TensorRT] INFO: Added linear block of size 9437184                                                                                                                                                         
+[TensorRT] INFO: Added linear block of size 9437184                                                                                                                                                         
+[TensorRT] INFO: Added linear block of size 4718592                                                                                                                                                         
+[TensorRT] INFO: Added linear block of size 1179648                                                                                                                                                         
+[TensorRT] INFO: Added linear block of size 512                                                                                                                                                             
+[TensorRT] WARNING: TensorRT was compiled against cuDNN 7.5.0 but is linked against cuDNN 7.5.1. This mismatch may potentially cause undefined behavior.                                                    
+[TensorRT] INFO: Deserialize required 28194 microseconds.                                                                                                                                                   
+[TensorRT] WARNING: TensorRT was compiled against cuDNN 7.5.0 but is linked against cuDNN 7.5.1. This mismatch may potentially cause undefined behavior.                                                    
+binding: 0                                                                                                                                                                                                  
+shape: (3, 768, 1536)                                                                                                                                                                                       
+nptype: DataType.FLOAT                                                                                                                                                                                      
+input?: True                                                                                                                                                                                                
+binding: 340                                                                                                                                                                                                
+shape: (768, 1536)                                                                                                                                                                                          
+nptype: DataType.INT32                                                                                                                                                                                      
+input?: False                                                                                                                                                                                               
+input image:                                                                                                                                                                                                
+input shape: (3, 768, 1536)                                                                                                                                                                                 
+max,min,mean,std: 0.594 -0.485 0.31385097 0.20309699                                                                                                                                                        
+infer cost: 13              
+```
 
 ## Disclaimer
 This project is under active development. So things that are currently working might break in a future release. However, feel free to open issue if you get stuck anywhere.
