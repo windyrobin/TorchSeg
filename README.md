@@ -118,6 +118,11 @@ In the evaluator, we have implemented the multi-gpu inference base on the multi-
     [--show_image] [--save_path Pred_Save_Path]
     ```
 3. sample here
+add pytrt5 support:
+```
+ c++ -O3 -Wall -shared -std=c++11 -fPIC -I /mnt/pybind11/include/ -I/usr/include/python3.5 example.cpp -lnvonnxparser_runtime  -o example`python3-config --extension-suffix`
+```
+
 ```
 root@gpu-labeling:/mnt/xm-bisenet/model/bisenet/cityscapes.bisenet.R18.speed# python3 infer.py --tensorrt                                                                                                   
 09 10:28:08 using devices 1                                                                                                                                                                                 
