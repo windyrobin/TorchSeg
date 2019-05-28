@@ -16,7 +16,8 @@ from engine.logger import get_logger
 from seg_opr.metric import hist_info, compute_score
 from tools.benchmark import compute_speed, stat
 from datasets.TestData import TestData
-from datasets.cityscapes import Cityscapes
+#from datasets.cityscapes import Cityscapes
+from datasets.etseg import ETSeg
 from network import BiSeNet
 
 logger = get_logger()
@@ -39,7 +40,7 @@ class SegInferencer(Inferencer):
                                device)
 
         if self.save_path is not None:
-            colors = Cityscapes.get_class_colors()
+            colors = ETSeg.get_class_colors()
             image = img
             comp_img = show_img(colors, config.background, image,
                                 pred)

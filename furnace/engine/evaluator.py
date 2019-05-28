@@ -152,12 +152,12 @@ class Evaluator(object):
                                     interpolation=cv2.INTER_LINEAR)
             scaled_img = self.process_image(scaled_img, None)
             pred = self.val_func_process(scaled_img, device)
-            pred = pred.permute(1, 2, 0)
-            processed_pred += cv2.resize(pred.cpu().numpy(),
-                                         (output_size[1], output_size[0]),
-                                         interpolation=cv2.INTER_LINEAR)
+            #pred = pred.permute(1, 2, 0)
+            #processed_pred += cv2.resize(pred.cpu().numpy(),
+            #                             (output_size[1], output_size[0]),
+            #                             interpolation=cv2.INTER_LINEAR)
 
-        pred = processed_pred.argmax(2)
+        #pred = processed_pred.argmax(2)
 
         return pred
 
@@ -248,10 +248,12 @@ class Evaluator(object):
                     score_flip = self.val_func(input_data)
                     score_flip = score_flip[0]
                     score += score_flip.flip(-1)
-                score = torch.exp(score)
+                #score = torch.exp(score)
                 # score = score.data
+                print('shape of score:')
+                print(score.shape)
 
-        return score
+        return score.cpu().numpy()
 
     def process_image(self, img, crop_size=None):
         p_img = img

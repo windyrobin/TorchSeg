@@ -15,7 +15,7 @@ from tensorboardX import SummaryWriter
 network = BiSeNet(config.num_classes, is_training=False,
               criterion=None, ohem_criterion=None)
 
-dummy_input = torch.randn(1, 3, 768, 768*2)
+dummy_input = torch.randn(1, 3, 352, 640)
 
 with SummaryWriter(comment="bisenet") as w:
     w.add_graph(network, (dummy_input, ))

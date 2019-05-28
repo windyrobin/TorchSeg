@@ -15,7 +15,8 @@ from engine.evaluator import Evaluator
 from engine.logger import get_logger
 from seg_opr.metric import hist_info, compute_score
 from tools.benchmark import compute_speed, stat
-from datasets.cityscapes import Cityscapes
+#from datasets.cityscapes import Cityscapes
+from datasets.etseg import ETSeg
 from network import BiSeNet
 
 logger = get_logger()
@@ -32,12 +33,20 @@ class SegEvaluator(Evaluator):
         label = cv2.resize(label,
                            (config.image_width // config.gt_down_sampling,
                             config.image_height // config.gt_down_sampling),
+                           #(config.image_width,
+                           #config.image_height),
                            interpolation=cv2.INTER_NEAREST)
 
         pred = self.whole_eval(img,
                                (config.image_height // config.gt_down_sampling,
                                 config.image_width // config.gt_down_sampling),
+                               #(config.image_height,
+                               # config.image_width),
                                device)
+        print('pred shape:')
+        print(pred.shape)
+        print('label shape:')
+        print(label.shape)
         hist_tmp, labeled_tmp, correct_tmp = hist_info(config.num_classes,
                                                        pred,
                                                        label)
@@ -103,7 +112,8 @@ if __name__ == "__main__":
                     'gt_root': config.gt_root_folder,
                     'train_source': config.train_source,
                     'eval_source': config.eval_source}
-    dataset = Cityscapes(data_setting, 'val', None)
+    #dataset = Cityscapes(data_setting, 'val', None)
+    dataset = ETSeg(data_setting, 'val', None)
 
     if args.speed_test:
         device = all_dev[0]

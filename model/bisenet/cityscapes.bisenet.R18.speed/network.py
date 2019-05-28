@@ -50,15 +50,15 @@ class BiSeNet(nn.Module):
                               has_relu=True, has_bias=False)]
 
         if is_training:
-            heads = [BiSeNetHead(conv_channel, out_planes, 2,
+            heads = [BiSeNetHead(conv_channel, out_planes, 16,
                                  True, norm_layer),
-                     BiSeNetHead(conv_channel, out_planes, 1,
+                     BiSeNetHead(conv_channel, out_planes, 8,
                                  True, norm_layer),
-                     BiSeNetHead(conv_channel * 2, out_planes, 1,
+                     BiSeNetHead(conv_channel * 2, out_planes, 8,
                                  False, norm_layer)]
         else:
             heads = [None, None,
-                     BiSeNetHead(conv_channel * 2, out_planes, 1,
+                     BiSeNetHead(conv_channel * 2, out_planes, 8,
                                  False, norm_layer)]
 
         self.ffm = FeatureFusion(conv_channel * 2, conv_channel * 2,
@@ -85,7 +85,8 @@ class BiSeNet(nn.Module):
         context_blocks = self.context_path(data)
         context_blocks.reverse()
 
-        fix_sizes = [(24, 48), (48, 96), (96, 192)]
+        #fix_sizes = [(24, 48), (48, 96), (96, 192)]
+        fix_sizes = [(11, 20), (22, 40), (44, 80)]
         global_context_avg = self.global_context(context_blocks[0])
         global_context = F.interpolate(global_context_avg,
                                        #size=context_blocks[0].size()[2:],
@@ -95,6 +96,11 @@ class BiSeNet(nn.Module):
 
         last_fm = global_context
         pred_out = []
+
+        #print('cotexxt block size:')
+        #print(context_blocks[0].size()[2:])
+        #print(context_blocks[1].size()[2:])
+        #print(context_blocks[2].size()[2:])
 
         for i, (fm, arm, refine) in enumerate(zip(context_blocks[:2], self.arms,
                                                   self.refines)):
@@ -126,10 +132,11 @@ class BiSeNet(nn.Module):
         #np.save('head_out.npy', out_data);
         #for i in range(5):
         #    np.savetxt('head_out_' + str(i) + 'txt', out_data[0][i])
-        lsf_result = F.log_softmax(head_out, dim=1)
-        lsf_result = torch.exp(lsf_result)
-        lsf_result = F.interpolate(lsf_result, size=(768, 768*2), mode= 'bilinear', align_corners=True)
-        lsf_result = lsf_result.permute(0, 2, 3, 1)
+        #lsf_result = F.log_softmax(head_out, dim=1)
+        #lsf_result = torch.exp(lsf_result)
+        #lsf_result = F.interpolate(lsf_result, size=(768, 768*2), mode= 'bilinear', align_corners=True)
+        #lsf_result = lsf_result.permute(0, 2, 3, 1)
+        lsf_result = head_out.permute(0, 2, 3, 1)
         lsf_result = lsf_result.argmax(3)
         #np.save('torch_lsf_result.npy', lsf_result.cpu().numpy());
         #np.save('torch_spatial_out.npy', spatial_out.cpu().numpy());
@@ -149,7 +156,7 @@ class SpatialPath(nn.Module):
         inner_channel = 64
         self.conv_7x7 = ConvBnRelu(in_planes, inner_channel, 7, 2, 3,
                                    has_bn=True, norm_layer=norm_layer,
-                                   has_relu=True, has_bias=False, debug=True)
+                                   has_relu=True, has_bias=False)
         self.conv_3x3_1 = ConvBnRelu(inner_channel, inner_channel, 3, 2, 1,
                                      has_bn=True, norm_layer=norm_layer,
                                      has_relu=True, has_bias=False)
@@ -161,13 +168,10 @@ class SpatialPath(nn.Module):
                                    has_relu=True, has_bias=False)
 
     def forward(self, x):
-        xs = self.conv_7x7(x)
-        x1 = xs[2]
-        x2 = self.conv_3x3_1(x1)
-        x3 = self.conv_3x3_2(x2)
-        output = self.conv_1x1(x3)
-
-        #return output, xs[0], xs[1]
+        x = self.conv_7x7(x)
+        x = self.conv_3x3_1(x)
+        x = self.conv_3x3_2(x)
+        output = self.conv_1x1(x)
         return output
 
 
@@ -197,7 +201,15 @@ class BiSeNetHead(nn.Module):
         # fm = self.dropout(fm)
         output = self.conv_1x1(fm)
         if self.scale > 1:
-            output = F.interpolate(output, scale_factor=self.scale,
+            if self.scale == 8:
+                #hacked for onnx export, scale-factor not supported now
+                output = F.interpolate(output, 
+                                   #scale_factor=(8),
+                                   size=(352, 640),
+                                   mode='bilinear',
+                                   align_corners=True)
+            else:
+                output = F.interpolate(output, scale_factor=self.scale,
                                    mode='bilinear',
                                    align_corners=True)
 
@@ -205,5 +217,5 @@ class BiSeNetHead(nn.Module):
 
 
 if __name__ == "__main__":
-    model = BiSeNet(19, None)
+    model = BiSeNet(22, None)
     # print(model)

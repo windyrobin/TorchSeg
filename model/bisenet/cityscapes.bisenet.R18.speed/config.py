@@ -20,7 +20,7 @@ cfg = C
 C.seed = 12345
 
 """please config ROOT_dir and user when u first using"""
-C.repo_name = 'TorchSeg'
+C.repo_name = 'xm-bisenet'
 C.abs_dir = osp.realpath(".")
 C.this_dir = C.abs_dir.split(osp.sep)[-1]
 C.root_dir = C.abs_dir[:C.abs_dir.index(C.repo_name) + len(C.repo_name)]
@@ -35,11 +35,11 @@ C.val_log_file = C.log_dir + '/val_' + exp_time + '.log'
 C.link_val_log_file = C.log_dir + '/val_last.log'
 
 """Data Dir and Weight Dir"""
-C.dataset_path = "/mnt/data/cityscapes/"
+C.dataset_path = "/mnt/data/pingqiu/"
 C.img_root_folder = C.dataset_path
 C.gt_root_folder = C.dataset_path
-C.train_source = osp.join(C.dataset_path, "cityscapes_train_img_label.list")
-C.eval_source = osp.join(C.dataset_path, "cityscapes_val.txt")
+C.train_source = osp.join(C.dataset_path, "train.txt")
+C.eval_source = osp.join(C.dataset_path, "val.txt")
 C.test_source = osp.join(C.dataset_path, "cityscapes_val.txt")
 C.is_test = False
 
@@ -56,16 +56,17 @@ add_path(osp.join(C.root_dir, 'furnace'))
 from utils.pyt_utils import model_urls
 
 """Image Config"""
-C.num_classes = 19
+C.num_classes = 22
 C.background = -1
 C.image_mean = np.array([0.485, 0.456, 0.406])  # 0.485, 0.456, 0.406
 C.image_std = np.array([0.229, 0.224, 0.225])
-C.target_size = 1024
-C.image_height = 768
-C.image_width = 768 * 2
-C.gt_down_sampling = 8
-C.num_train_imgs = 2975
-C.num_eval_imgs = 500
+C.target_size = 640
+C.image_height = 352
+C.image_width = 640
+#C.gt_down_sampling = 8
+C.gt_down_sampling = 1
+C.num_train_imgs = 2087
+C.num_eval_imgs = 219
 
 """ Settings for network, this would be different for each kind of model"""
 C.fix_bias = True
@@ -82,7 +83,7 @@ C.lr = 1e-2
 C.lr_power = 0.9
 C.momentum = 0.9
 C.weight_decay = 5e-4
-C.batch_size = 16 #4 * C.num_gpu
+C.batch_size = 8 #4 * C.num_gpu
 C.nepochs = 80
 C.niters_per_epoch = 1000
 C.num_workers = 24
@@ -93,8 +94,8 @@ C.eval_iter = 30
 C.eval_stride_rate = 2 / 3
 C.eval_scale_array = [1, ]
 C.eval_flip = False
-C.eval_height = 768
-C.eval_width = 768 * 2
+C.eval_height = 352
+C.eval_width = 640
 
 """Display Config"""
 C.snapshot_iter = 50

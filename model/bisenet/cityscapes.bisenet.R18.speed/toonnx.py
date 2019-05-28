@@ -48,7 +48,7 @@ def load_model(model, model_file, is_restore=False):
     return model
 
 # A model class instance (class not shown)
-model = BiSeNet(19, is_training=False, criterion=None, ohem_criterion=None)
+model = BiSeNet(22, is_training=False, criterion=None, ohem_criterion=None)
 
 # Load the weights from a file (.pth usually)
 #state_dict = torch.load('./log_back/snapshot/epoch-last.pth')
@@ -56,9 +56,9 @@ model = BiSeNet(19, is_training=False, criterion=None, ohem_criterion=None)
 # Load the weights now into a model net architecture defined by our class
 #model.load_state_dict(state_dict, strict=False)
 
-load_model(model, './log_back/snapshot/epoch-last.pth')
+load_model(model, './log/snapshot/epoch-last.pth')
 
 # Create the right input shape (e.g. for an image)
-dummy_input = torch.randn(1, 3, 768, 768*2)
+dummy_input = torch.randn(1, 3, 352, 640)
 
-torch.onnx.export(model, dummy_input, "bisenet.onnx", operator_export_type=torch.onnx.OperatorExportTypes.ONNX_ATEN_FALLBACK)
+torch.onnx.export(model, dummy_input, "bisenet.onnx", operator_export_type=torch.onnx.OperatorExportTypes.ONNX_ATEN_FALLBACK, do_constant_folding=True, verbose=True)
