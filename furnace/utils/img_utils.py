@@ -182,6 +182,6 @@ def normalize(img, mean, std):
     # pytorch pretrained model need the input range: 0-1
     new_img = img.astype(np.float32) / 255.0
     new_img = new_img - mean
-    # img = img / std
+    img = img / std
 
     return new_img

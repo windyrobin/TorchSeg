@@ -11,11 +11,11 @@ from engine.logger import get_logger
 from utils.pyt_utils import load_model, link_file, ensure_dir
 from utils.img_utils import pad_image_to_shape, normalize
 
-import tensorrt as trt
-import example
-import common
-import pycuda.driver as cuda
-import pycuda.autoinit
+#import tensorrt as trt
+#import example
+#import common
+#import pycuda.driver as cuda
+#import pycuda.autoinit
 
 logger = get_logger()
 
@@ -252,7 +252,11 @@ class Inferencer(object):
                                           dtype=np.float32)
         print("inputs:")
         print('input shape:', input_data.shape)
+        print('self.iter:', self.iter)
         self.print_statics(input_data)
+        input_data.tofile('sample_bin/np_' + str(self.iter) + '.bin')
+        self.iter = self.iter + 1
+
         input_data = torch.FloatTensor(input_data).cuda(device)
 
         with torch.cuda.device(input_data.get_device()):

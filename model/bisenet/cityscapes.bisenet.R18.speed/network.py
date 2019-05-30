@@ -9,7 +9,7 @@ from torch.utils.checkpoint import checkpoint
 import numpy as np
 from config import config
 from base_model import resnet18
-from seg_opr.seg_oprs import ConvBnRelu, AttentionRefinement, FeatureFusion
+from seg_opr.seg_oprs import ConvBnRelu, DeConvBnRelu, AttentionRefinement, FeatureFusion
 
 
 def get():
@@ -50,15 +50,24 @@ class BiSeNet(nn.Module):
                               has_relu=True, has_bias=False)]
 
         if is_training:
-            heads = [BiSeNetHead(conv_channel, out_planes, 16,
+            #heads = [BiSeNetHead(conv_channel, out_planes, 16,
+            #                     True, norm_layer),
+            #         BiSeNetHead(conv_channel, out_planes, 8,
+            #                     True, norm_layer),
+            #         BiSeNetHead(conv_channel * 2, out_planes, 8,
+            #                     False, norm_layer)]
+            heads = [XmHead(conv_channel, out_planes, 16,
                                  True, norm_layer),
-                     BiSeNetHead(conv_channel, out_planes, 8,
+                     XmHead(conv_channel, out_planes, 8,
                                  True, norm_layer),
-                     BiSeNetHead(conv_channel * 2, out_planes, 8,
+                     XmHead(conv_channel * 2, out_planes, 8,
                                  False, norm_layer)]
         else:
+            #heads = [None, None,
+            #         BiSeNetHead(conv_channel * 2, out_planes, 8,
+            #                     False, norm_layer)]
             heads = [None, None,
-                     BiSeNetHead(conv_channel * 2, out_planes, 8,
+                     XmHead(conv_channel * 2, out_planes, 8,
                                  False, norm_layer)]
 
         self.ffm = FeatureFusion(conv_channel * 2, conv_channel * 2,
@@ -119,11 +128,12 @@ class BiSeNet(nn.Module):
         pred_out.append(concate_fm)
 
         if self.is_training:
-            aux_loss0 = self.ohem_criterion(self.heads[0](pred_out[0]), label)
-            aux_loss1 = self.ohem_criterion(self.heads[1](pred_out[1]), label)
+            #aux_loss0 = self.ohem_criterion(self.heads[0](pred_out[0]), label)
+            #aux_loss1 = self.ohem_criterion(self.heads[1](pred_out[1]), label)
             main_loss = self.ohem_criterion(self.heads[-1](pred_out[2]), label)
 
-            loss = main_loss + aux_loss0 + aux_loss1
+            loss = main_loss
+            #loss = main_loss + aux_loss0 + aux_loss1
             return loss
 
         head_out = self.heads[-1](pred_out[-1])
@@ -213,6 +223,60 @@ class BiSeNetHead(nn.Module):
                                    mode='bilinear',
                                    align_corners=True)
 
+        return output
+
+class XmHead(nn.Module):
+    def __init__(self, in_planes, out_planes, scale,
+                 is_aux=False, norm_layer=nn.BatchNorm2d):
+        super(XmHead, self).__init__()
+        if is_aux:
+            #assert(scale == 16 and in_planes ==256)
+            dconv0 =  DeConvBnRelu(in_planes, 128, 3, 2, 1, 1,
+                                       has_bn=True, norm_layer=norm_layer,
+                                       has_relu=True, has_bias=False)
+
+            dconv1 =  DeConvBnRelu(128, 64, 3, 2, 1, 1,
+                                       has_bn=True, norm_layer=norm_layer,
+                                       has_relu=True, has_bias=False)
+            dconv2 =  DeConvBnRelu(64, 32, 3, 2, 1, 1,
+                                       has_bn=True, norm_layer=norm_layer,
+                                       has_relu=True, has_bias=False)
+
+            deconv_arr = [dconv0, dconv1, dconv2] 
+        else:
+            assert(scale == 8 and in_planes == 256)
+            dconv0 =  DeConvBnRelu(in_planes, 128, 3, 2, 1, 1,
+                                       has_bn=True, norm_layer=norm_layer,
+                                       has_relu=True, has_bias=False)
+
+            dconv1 =  DeConvBnRelu(128, 64, 3, 2, 1, 1,
+                                       has_bn=True, norm_layer=norm_layer,
+                                       has_relu=True, has_bias=False)
+            dconv2 =  DeConvBnRelu(64, 32, 3, 2, 1, 1,
+                                       has_bn=True, norm_layer=norm_layer,
+                                       has_relu=True, has_bias=False)
+
+            deconv_arr = [dconv0, dconv1, dconv2] 
+
+        self.deconv_3x3_arr = nn.ModuleList(deconv_arr)
+        # self.dropout = nn.Dropout(0.1)
+        if is_aux:
+            self.conv_1x1 = nn.Conv2d(32, out_planes, kernel_size=1,
+                                      stride=1, padding=0)
+        else:
+            self.conv_1x1 = nn.Conv2d(32, out_planes, kernel_size=1,
+                                      stride=1, padding=0)
+        self.scale = scale
+        self.in_planes = in_planes
+
+    def forward(self, x):
+        #aux not supported now
+        #if self.scale == 8:
+        fm = self.deconv_3x3_arr[0](x)
+        fm = self.deconv_3x3_arr[1](fm)
+        fm = self.deconv_3x3_arr[2](fm)
+        # fm = self.dropout(fm)
+        output = self.conv_1x1(fm)
         return output
 
 

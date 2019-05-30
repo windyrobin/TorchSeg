@@ -105,6 +105,8 @@ with Engine(custom_parser=parser) as engine:
     else:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         model = DataParallelModel(model, device_ids=engine.devices)
+        print('model to device:')
+        print(device)
         model.to(device)
 
     engine.register_state(dataloader=train_loader, model=model,

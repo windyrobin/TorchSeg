@@ -83,7 +83,7 @@ if __name__ == "__main__":
 
     network = BiSeNet(config.num_classes, is_training=False,
                       criterion=None, ohem_criterion=None)
-    dataset = TestData('./fe_test')
+    dataset = TestData('./sample_test')
 
     if args.speed_test:
         device = all_dev[0]

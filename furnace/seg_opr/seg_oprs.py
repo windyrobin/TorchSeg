@@ -47,6 +47,43 @@ class ConvBnRelu(nn.Module):
             #print ('running weight :')
             #print (self.bn.weight)
             return [x, x1, x2]
+
+class DeConvBnRelu(nn.Module):
+    def __init__(self, in_planes, out_planes, ksize, stride, pad, output_pad, dilation=1,
+                 groups=1, has_bn=True, norm_layer=nn.BatchNorm2d, bn_eps=1e-5,
+                 has_relu=True, inplace=True, has_bias=False, debug=False):
+        super(DeConvBnRelu, self).__init__()
+        self.conv = nn.ConvTranspose2d(in_planes, out_planes, kernel_size=ksize,
+                              stride=stride, padding=pad, output_padding=output_pad,
+                              dilation=dilation, groups=groups, bias=has_bias)
+        self.has_bn = has_bn
+        if self.has_bn:
+            self.bn = norm_layer(out_planes, eps=bn_eps)
+        self.has_relu = has_relu
+        if self.has_relu:
+            self.relu = nn.ReLU(inplace=inplace)
+        self.debug = debug
+
+    def forward(self, x):
+        if self.debug ==  False:
+            x = self.conv(x)
+            if self.has_bn:
+                x = self.bn(x)
+            if self.has_relu:
+                x = self.relu(x)
+
+            return x
+        else:
+            x = self.conv(x)
+            x1 = self.bn(x)
+            x2 = self.relu(x1)
+            #print ('running meaning :')
+            #print (self.bn.running_mean)
+            #print ('running var :')
+            #print (self.bn.running_var)
+            #print ('running weight :')
+            #print (self.bn.weight)
+            return [x, x1, x2]
             
 
 

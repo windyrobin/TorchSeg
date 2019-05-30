@@ -64,12 +64,19 @@ class ProbOhemCrossEntropy2d(nn.Module):
                                                        ignore_index=ignore_label)
 
     def forward(self, pred, target):
+        #print('pred shape:')
+        #print(pred.shape)
+        #print('target shape:')
+        #print(target.shape)
+
         b, c, h, w = pred.size()
         target = target.view(-1)
         valid_mask = target.ne(self.ignore_label)
         target = target * valid_mask.long()
         num_valid = valid_mask.sum()
 
+        #print('num valid:')
+        #print(num_valid)
         prob = F.softmax(pred, dim=1)
         prob = (prob.transpose(0, 1)).reshape(c, -1)
 

@@ -11,7 +11,8 @@ import torch.nn as nn
 def __init_weight(feature, conv_init, norm_layer, bn_eps, bn_momentum,
                   **kwargs):
     for name, m in feature.named_modules():
-        if isinstance(m, (nn.Conv2d, nn.Conv3d)):
+        #if isinstance(m, (nn.Conv2d, nn.Conv3d)):
+        if isinstance(m, (nn.Conv2d, nn.Conv3d, nn.ConvTranspose2d)):
             conv_init(m.weight, **kwargs)
         elif isinstance(m, norm_layer):
             m.eps = bn_eps
@@ -39,7 +40,8 @@ def group_weight(weight_group, module, norm_layer, lr):
             group_decay.append(m.weight)
             if m.bias is not None:
                 group_no_decay.append(m.bias)
-        elif isinstance(m, (nn.Conv2d, nn.Conv3d)):
+        #elif isinstance(m, (nn.Conv2d, nn.Conv3d)):
+        elif isinstance(m, (nn.Conv2d, nn.Conv3d, nn.ConvTranspose2d)):
             group_decay.append(m.weight)
             if m.bias is not None:
                 group_no_decay.append(m.bias)
