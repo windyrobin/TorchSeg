@@ -35,7 +35,7 @@ C.val_log_file = C.log_dir + '/val_' + exp_time + '.log'
 C.link_val_log_file = C.log_dir + '/val_last.log'
 
 """Data Dir and Weight Dir"""
-C.dataset_path = "/mnt/data/pingqiu/"
+C.dataset_path = "/mnt/data/pingqiu-data/"
 C.img_root_folder = C.dataset_path
 C.gt_root_folder = C.dataset_path
 C.train_source = osp.join(C.dataset_path, "train.txt")
@@ -56,7 +56,7 @@ add_path(osp.join(C.root_dir, 'furnace'))
 from utils.pyt_utils import model_urls
 
 """Image Config"""
-C.num_classes = 22
+C.num_classes = 24
 C.background = -1
 C.image_mean = np.array([0.485, 0.456, 0.406])  # 0.485, 0.456, 0.406
 C.image_std = np.array([0.229, 0.224, 0.225])
@@ -65,8 +65,8 @@ C.image_height = 352
 C.image_width = 640
 #C.gt_down_sampling = 8
 C.gt_down_sampling = 1
-C.num_train_imgs = 2087
-C.num_eval_imgs = 219
+C.num_train_imgs = 2679
+C.num_eval_imgs = 275
 
 """ Settings for network, this would be different for each kind of model"""
 C.fix_bias = True

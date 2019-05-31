@@ -238,9 +238,10 @@ class XmHead(nn.Module):
             dconv1 =  DeConvBnRelu(128, 64, 3, 2, 1, 1,
                                        has_bn=True, norm_layer=norm_layer,
                                        has_relu=True, has_bias=False)
-            dconv2 =  DeConvBnRelu(64, 32, 3, 2, 1, 1,
+            #dconv2 =  DeConvBnRelu(64, 32, 3, 2, 1, 1,
+            dconv2 =  DeConvBnRelu(64, out_planes, 3, 2, 1, 1,
                                        has_bn=True, norm_layer=norm_layer,
-                                       has_relu=True, has_bias=False)
+                                       has_relu=False, has_bias=False)
 
             deconv_arr = [dconv0, dconv1, dconv2] 
         else:
@@ -252,20 +253,24 @@ class XmHead(nn.Module):
             dconv1 =  DeConvBnRelu(128, 64, 3, 2, 1, 1,
                                        has_bn=True, norm_layer=norm_layer,
                                        has_relu=True, has_bias=False)
-            dconv2 =  DeConvBnRelu(64, 32, 3, 2, 1, 1,
+            #dconv2 =  DeConvBnRelu(64, 32, 3, 2, 1, 1,
+            dconv2 =  DeConvBnRelu(64, out_planes, 3, 2, 1, 1,
                                        has_bn=True, norm_layer=norm_layer,
-                                       has_relu=True, has_bias=False)
+                                       has_relu=False, has_bias=False)
 
             deconv_arr = [dconv0, dconv1, dconv2] 
 
         self.deconv_3x3_arr = nn.ModuleList(deconv_arr)
         # self.dropout = nn.Dropout(0.1)
-        if is_aux:
-            self.conv_1x1 = nn.Conv2d(32, out_planes, kernel_size=1,
-                                      stride=1, padding=0)
-        else:
-            self.conv_1x1 = nn.Conv2d(32, out_planes, kernel_size=1,
-                                      stride=1, padding=0)
+        #if is_aux:
+        #    self.conv_1x1 = nn.Conv2d(32, out_planes, kernel_size=1,
+        #                              stride=1, padding=0)
+        #else:
+        #    self.conv_1x1 = nn.Conv2d(32, out_planes, kernel_size=1,
+                                      #stride=1, padding=0)
+        #self.deconv = DeConvBnRelu(in_planes, 22, 11, 8, 2, 1,
+        #                          has_bn=True, norm_layer=norm_layer,
+        #                          has_relu=False, has_bias=True)
         self.scale = scale
         self.in_planes = in_planes
 
@@ -275,11 +280,13 @@ class XmHead(nn.Module):
         fm = self.deconv_3x3_arr[0](x)
         fm = self.deconv_3x3_arr[1](fm)
         fm = self.deconv_3x3_arr[2](fm)
+        return fm
         # fm = self.dropout(fm)
-        output = self.conv_1x1(fm)
-        return output
+        #output = self.conv_1x1(fm)
+        #return output
+        #return self.deconv(x)
 
 
 if __name__ == "__main__":
-    model = BiSeNet(22, None)
+    model = BiSeNet(config.num_classes, None)
     # print(model)
